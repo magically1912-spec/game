@@ -95,6 +95,28 @@ class CatAudio {
     osc.stop(now + 0.1);
   }
 
+  playFlutter() {
+    this.init();
+    if (!this.ctx) return;
+    const now = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    
+    // Very quiet, high-pitched flutter/buzz
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(2000, now);
+    osc.frequency.linearRampToValueAtTime(2500, now + 0.02);
+    osc.frequency.linearRampToValueAtTime(2000, now + 0.04);
+    
+    gain.gain.setValueAtTime(0.02, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+    
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+    osc.start();
+    osc.stop(now + 0.05);
+  }
+
   playCatch() {
     this.init();
     if (!this.ctx) return;
@@ -270,6 +292,11 @@ export default function App() {
         if (speed > MAX_SPEED) {
           state.vel.x *= 0.95;
           state.vel.y *= 0.95;
+        }
+
+        // Flutter sound during motion
+        if (speed > 2 && Math.random() < 0.02 && !isMuted) {
+          audioManager.playFlutter();
         }
 
         // Anti-corner logic
