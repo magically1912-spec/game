@@ -73,6 +73,28 @@ class CatAudio {
     osc.stop(this.ctx.currentTime + 0.1);
   }
 
+  playChirp() {
+    this.init();
+    if (!this.ctx) return;
+    const now = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    
+    // High-pitched bird-like chirp
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(1500, now);
+    osc.frequency.exponentialRampToValueAtTime(3000, now + 0.05);
+    osc.frequency.exponentialRampToValueAtTime(2000, now + 0.1);
+    
+    gain.gain.setValueAtTime(0.05, now);
+    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+    
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+    osc.start();
+    osc.stop(now + 0.1);
+  }
+
   playCatch() {
     this.init();
     if (!this.ctx) return;
@@ -177,6 +199,7 @@ export default function App() {
         state.pauseTimer--;
         if (state.pauseTimer <= 0) {
           state.isPaused = false;
+          if (!isMuted) audioManager.playChirp();
           // Sudden burst after pause
           const angle = Math.random() * Math.PI * 2;
           const speed = Math.random() * 8 + 6;
